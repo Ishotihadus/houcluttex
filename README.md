@@ -8,7 +8,7 @@
 
 ## 使い方
 
-    $ cluttex [OPTIONS] [--] INPUT.tex
+    $ houcluttex [OPTIONS] [--] INPUT.tex
 
 ### コンフィグ
 
