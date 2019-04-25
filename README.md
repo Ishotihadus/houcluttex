@@ -64,6 +64,12 @@ ClutTeX と同様のコマンドラインオプションと、`config` オプシ
 
 `cluttex-path` オプションは ClutTeX のパスを指定します。デフォルトは `cluttex` です。
 
+## サンプル
+
+sample ディレクトリにサンプルがあります。
+
+magic ディレクトリでは `houcluttex test.tex`、yaml ディレクトリでは `houcluttex` を実行するとコンパイルできます。
+
 ## ライセンス
 
 この gem は [MIT License](https://opensource.org/licenses/MIT) のもとで利用できます。
