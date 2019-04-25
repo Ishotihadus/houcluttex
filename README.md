@@ -20,8 +20,7 @@
 
 #### コンフィグファイル
 
-yaml 形式で指定します。`houcluttex.yml` をデフォルトとしますが、`houcluttex.yaml`、`houcluttexrc`、`.houcluttexrc` なども可能です。
-コマンドラインオプション `--config` でファイル名を指定できます。
+yaml 形式で指定します。`houcluttex.yml` をデフォルトとしますが、`houcluttex.yaml`、`houcluttexrc`、`.houcluttexrc` なども可能です。コマンドラインオプション `--config` でファイル名を明示することもできます。
 
 yaml ファイルは Key-value の形式で ClutTeX のオプションを指定します。
 
@@ -59,8 +58,7 @@ ClutTeX と同様のコマンドラインオプションと、`config` オプシ
 
 #### 特別なオプション
 
-`input` オプションで指定したファイル名は、入力ファイルがコマンドラインで与えられなかった場合の入力ファイルとして利用します。
-このオプションはコマンドラインでは利用できません。
+`input` オプションで指定したファイル名は、入力ファイルがコマンドラインで与えられなかった場合の入力ファイルとして利用します。このオプションは yaml でのみ利用可能です。
 
 `cluttex-path` オプションは ClutTeX のパスを指定します。デフォルトは `cluttex` です。
 
