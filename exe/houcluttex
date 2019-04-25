@@ -74,6 +74,8 @@ until argv.empty?
         when 'tex-option', 'dvipdfmx-option'
             config_by_args[m[1]] ||= []
             config_by_args[m[1]] << (m[3] || argv.shift)
+        when 'includeonly'
+            config_by_args[m[1]] = (m[3] || argv.shift).split(',')
         when 'input'
             raise 'cannot use `--input` option in command-line'
         when 'config'
