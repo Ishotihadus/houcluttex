@@ -1,0 +1,7 @@
+engine: uplatex
+bibtex: upbibtex
+shell-escape: true
+synctex: 1
+file-line-error: true
+halt-on-error: false
+input: test.tex
