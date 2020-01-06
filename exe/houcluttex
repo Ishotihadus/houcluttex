@@ -2,8 +2,11 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'rbconfig'
 require 'shellwords'
 require 'yaml'
+
+IS_WINDOWS = %w[mswin msys mingw cygwin bccwin wince emc].any?{|s| RbConfig::CONFIG['host_os'].include?(s)}
 
 def convert_bool(str)
   case str.downcase
@@ -12,6 +15,30 @@ def convert_bool(str)
   when 'no', 'false'
     false
   end
+end
+
+def log(str, color_mode, color_fg = nil, color_bg = nil, bold = nil)
+  use_color = color_mode == 'always' || (color_mode == 'auto' && !IS_WINDOWS)
+  s = String.new('')
+  s << "\e[1m" if use_color && bold
+  s << "\e[3#{color_fg}m" if use_color && color_fg
+  s << "\e[4#{color_bg}m" if use_color && color_bg
+  s << str
+  s << "\e[0m" if use_color && (bold || color_fg)
+  warn s
+end
+
+def log_info(str, config)
+  return unless config['verbose']
+  log("[houcluttex] info: #{str}", config['color'] || 'auto', 2)
+end
+
+def log_warn(str, config)
+  log("[houcluttex] warn: #{str}", config['color'] || 'auto', 3, nil, true)
+end
+
+def log_error(str, config)
+  log("[houcluttex] error: #{str}", config['color'] || 'auto', 1, nil, true)
 end
 
 config_file = %w[houcluttex.yml houcluttex.yaml houcluttex_config.yml houcluttex_config.yaml houcluttexrc .houcluttexrc].find{|e| File.exist?(e)}
@@ -47,13 +74,14 @@ until argv.empty?
     when 'color'
       config_by_args[key] = m[3] || 'always'
     when 'input'
-      raise 'cannot use `--input` option in command-line'
+      log_warn('option `--input` is ignored in command-line', config)
+      value[]
     when 'config'
       config_file = value[]
     when 'cluttex-path', 'engine', 'output', 'max-iterations', 'make-depends', 'engine-executable', 'makeindex', 'bibtex', 'biber', 'makeglossaries', 'synctex', 'interaction', 'jobname', 'fmt', 'output-directory', 'output-format'
       config_by_args[key] = value[]
     else
-      warn "option `--#{key}` is ignored"
+      log_warn("option `-#{arg}` is ignored", config)
     end
   elsif arg.start_with?('-')
     key = arg[1..-1]
@@ -71,7 +99,7 @@ until argv.empty?
     when 'synctex', 'interaction', 'jobname', 'fmt', 'output-directory', 'output-format'
       config_by_args[key] = argv.shift
     else
-      warn "option `-#{arg}` is ignored"
+      log_warn("option `-#{arg}` is ignored", config)
     end
   else
     remain_args << arg
@@ -82,13 +110,21 @@ end
 config = config_file ? YAML.load_file(config_file) : {}
 
 # decide input file
-raise 'multiple input files' if remain_args.size >= 2
+if remain_args.size >= 2
+  log_error('multiple input files', config)
+  exit 1
+end
+
 config['input'] = remain_args[0] unless remain_args.empty?
-raise 'no input file' unless config['input']
+unless config['input']
+  log_error('no input file', config)
+  exit 1
+end
 
 # parse magic comments
 
 loop do
+  log_info("input file: #{config['input']}", config)
   raise "input file `#{config['input']}` does not exist" unless File.exist?(config['input'])
 
   root_file = nil
@@ -120,7 +156,7 @@ loop do
         raise 'magic option `enableShellEscape` must be boolean' if value.nil?
         config['shell-escape'] = value
       else
-        warn "magic comment `#{m[1]}` is ignored"
+        log_warn("magic comment `#{m[1]}` is ignored", config)
       end
     end
   end
@@ -136,12 +172,7 @@ config['cluttex-path'] ||= 'cluttex'
 `type #{config['cluttex-path']} 2>&1`
 raise "command `#{config['cluttex-path']}` not found" unless $?.success?
 
-if config['verbose']
-  warn 'ClutTeX options:'
-  config.each do |k, v|
-    warn "  #{k}: #{v.inspect}"
-  end
-end
+log_info("configurations: #{config.inspect}", config)
 
 # generate command
 
@@ -169,5 +200,7 @@ cmd_args << '--'
 cmd_args << config['input']
 
 FileUtils.mkdir_p(config['output-directory']) if config['output-directory']
+
+log_info("args: #{cmd_args.inspect}", config)
 
 system(config['cluttex-path'], *cmd_args)
