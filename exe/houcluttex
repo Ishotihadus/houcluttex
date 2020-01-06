@@ -88,34 +88,36 @@ loop do
     raise "input file `#{config['input']}` does not exist" unless File.exist?(config['input'])
 
     root_file = nil
-    File.foreach(config['input']) do |line|
-        next if line.strip.empty?
-        break unless line[0] == '%'
-        m = line.match(/^%\s*!TEX (\S+)\s*=\s*(.*?)\s*$/)
-        next unless m
-        key = m[1].tr('_-', '').downcase
-        value = m[2]
-        case key
-        when 'root'
-            root_file = value
-        when 'engine', 'synctex', 'jobname', 'makeindex', 'bibtex'
-            config[key] = value
-        when 'program'
-            config['engine'] = value
-        when 'format', 'outputformat'
-            config['output-format'] = value
-        when 'outputdirectory'
-            config['output-directory'] = value
-        when 'enablesynctex'
-            value = convert_bool(value)
-            raise 'magic option `enableSynctex` must be boolean' if value.nil?
-            config['synctex'] = value ? (config['synctex'] || 1) : nil
-        when 'enableshellescape'
-            value = convert_bool(value)
-            raise 'magic option `enableShellEscape` must be boolean' if value.nil?
-            config['shell-escape'] = value
-        else
-            warn "magic comment `#{m[1]}` is ignored"
+    File.open(config['input'], external_encoding: 'utf-8') do |io|
+        io.each do |line|
+            next if line.strip.empty?
+            break unless line[0] == '%'
+            m = line.match(/^%\s*!TEX (\S+)\s*=\s*(.*?)\s*$/)
+            next unless m
+            key = m[1].tr('_-', '').downcase
+            value = m[2]
+            case key
+            when 'root'
+                root_file = value
+            when 'engine', 'synctex', 'jobname', 'makeindex', 'bibtex'
+                config[key] = value
+            when 'program'
+                config['engine'] = value
+            when 'format', 'outputformat'
+                config['output-format'] = value
+            when 'outputdirectory'
+                config['output-directory'] = value
+            when 'enablesynctex'
+                value = convert_bool(value)
+                raise 'magic option `enableSynctex` must be boolean' if value.nil?
+                config['synctex'] = value ? (config['synctex'] || 1) : nil
+            when 'enableshellescape'
+                value = convert_bool(value)
+                raise 'magic option `enableShellEscape` must be boolean' if value.nil?
+                config['shell-escape'] = value
+            else
+                warn "magic comment `#{m[1]}` is ignored"
+            end
         end
     end
     break if root_file.nil? || config['input'] == root_file
