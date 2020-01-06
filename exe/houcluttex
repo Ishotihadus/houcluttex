@@ -6,12 +6,12 @@ require 'shellwords'
 require 'yaml'
 
 def convert_bool(str)
-    case str.downcase
-    when 'yes', 'true'
-        true
-    when 'no', 'false'
-        false
-    end
+  case str.downcase
+  when 'yes', 'true'
+    true
+  when 'no', 'false'
+    false
+  end
 end
 
 config_file = %w[houcluttex.yml houcluttex.yaml houcluttex_config.yml houcluttex_config.yaml houcluttexrc .houcluttexrc].find{|e| File.exist?(e)}
@@ -23,55 +23,55 @@ config_by_args = {}
 remain_args = []
 
 until argv.empty?
-    arg = argv.shift
-    if arg == '--'
-        remain_args += argv
-        argv = []
-    elsif arg.start_with?('--')
-        m = arg.match(/\A--([^=]+)(=(.*))?\z/)
-        case m[1]
-        when 'fresh', 'change-directory', 'watch', 'verbose', 'shell-escape', 'shell-restricted', 'file-line-error', 'halt-on-error'
-            config_by_args[m[1]] = true
-        when 'no-change-directory', 'no-shell-escape', 'no-file-line-error', 'no-halt-on-error'
-            config_by_args[m[1][3..-1]] = false
-        when 'tex-options', 'dvipdfmx-options'
-            config_by_args[m[1][0..-2]] ||= []
-            config_by_args[m[1][0..-2]] += (m[3] || argv.shift).shellsplit
-        when 'tex-option', 'dvipdfmx-option'
-            config_by_args[m[1]] ||= []
-            config_by_args[m[1]] << (m[3] || argv.shift)
-        when 'includeonly', 'package-support'
-            config_by_args[m[1]] = (m[3] || argv.shift).split(',')
-        when 'input'
-            raise 'cannot use `--input` option in command-line'
-        when 'config'
-            config_file = m[3] || argv.shift
-        when 'cluttex-path', 'engine', 'output', 'max-iterations', 'color', 'make-depends', 'engine-executable', 'makeindex', 'bibtex', 'biber', 'makeglossaries', 'synctex', 'interaction', 'jobname', 'fmt', 'output-directory', 'output-format'
-            config_by_args[m[1]] = m[3] || argv.shift
-        else
-            warn "option `--#{m[1]}` is ignored"
-        end
-    elsif arg.start_with?('-')
-        a = arg[1..-1]
-        case a
-        when 'e'
-            config_by_args['engine'] = argv.shift
-        when 'o'
-            config_by_args['output'] = argv.shift
-        when 'V'
-            config_by_args['verbose'] = true
-        when 'shell-escape', 'shell-restricted', 'file-line-error', 'halt-on-error'
-            config_by_args[a] = true
-        when 'no-shell-escape', 'no-file-line-error', 'no-halt-on-error'
-            config_by_args[a[3..-1]] = false
-        when 'synctex', 'interaction', 'jobname', 'fmt', 'output-directory', 'output-format'
-            config_by_args[a] = argv.shift
-        else
-            warn "option `-#{arg}` is ignored"
-        end
+  arg = argv.shift
+  if arg == '--'
+    remain_args += argv
+    argv = []
+  elsif arg.start_with?('--')
+    m = arg.match(/\A--([^=]+)(=(.*))?\z/)
+    case m[1]
+    when 'fresh', 'change-directory', 'watch', 'verbose', 'shell-escape', 'shell-restricted', 'file-line-error', 'halt-on-error'
+      config_by_args[m[1]] = true
+    when 'no-change-directory', 'no-shell-escape', 'no-file-line-error', 'no-halt-on-error'
+      config_by_args[m[1][3..-1]] = false
+    when 'tex-options', 'dvipdfmx-options'
+      config_by_args[m[1][0..-2]] ||= []
+      config_by_args[m[1][0..-2]] += (m[3] || argv.shift).shellsplit
+    when 'tex-option', 'dvipdfmx-option'
+      config_by_args[m[1]] ||= []
+      config_by_args[m[1]] << (m[3] || argv.shift)
+    when 'includeonly', 'package-support'
+      config_by_args[m[1]] = (m[3] || argv.shift).split(',')
+    when 'input'
+      raise 'cannot use `--input` option in command-line'
+    when 'config'
+      config_file = m[3] || argv.shift
+    when 'cluttex-path', 'engine', 'output', 'max-iterations', 'color', 'make-depends', 'engine-executable', 'makeindex', 'bibtex', 'biber', 'makeglossaries', 'synctex', 'interaction', 'jobname', 'fmt', 'output-directory', 'output-format'
+      config_by_args[m[1]] = m[3] || argv.shift
     else
-        remain_args << arg
+      warn "option `--#{m[1]}` is ignored"
     end
+  elsif arg.start_with?('-')
+    a = arg[1..-1]
+    case a
+    when 'e'
+      config_by_args['engine'] = argv.shift
+    when 'o'
+      config_by_args['output'] = argv.shift
+    when 'V'
+      config_by_args['verbose'] = true
+    when 'shell-escape', 'shell-restricted', 'file-line-error', 'halt-on-error'
+      config_by_args[a] = true
+    when 'no-shell-escape', 'no-file-line-error', 'no-halt-on-error'
+      config_by_args[a[3..-1]] = false
+    when 'synctex', 'interaction', 'jobname', 'fmt', 'output-directory', 'output-format'
+      config_by_args[a] = argv.shift
+    else
+      warn "option `-#{arg}` is ignored"
+    end
+  else
+    remain_args << arg
+  end
 end
 
 # load yaml
@@ -85,43 +85,43 @@ raise 'no input file' unless config['input']
 # parse magic comments
 
 loop do
-    raise "input file `#{config['input']}` does not exist" unless File.exist?(config['input'])
+  raise "input file `#{config['input']}` does not exist" unless File.exist?(config['input'])
 
-    root_file = nil
-    File.open(config['input'], external_encoding: 'utf-8') do |io|
-        io.each do |line|
-            next if line.strip.empty?
-            break unless line[0] == '%'
-            m = line.match(/^%\s*!TEX (\S+)\s*=\s*(.*?)\s*$/)
-            next unless m
-            key = m[1].tr('_-', '').downcase
-            value = m[2]
-            case key
-            when 'root'
-                root_file = value
-            when 'engine', 'synctex', 'jobname', 'makeindex', 'bibtex'
-                config[key] = value
-            when 'program'
-                config['engine'] = value
-            when 'format', 'outputformat'
-                config['output-format'] = value
-            when 'outputdirectory'
-                config['output-directory'] = value
-            when 'enablesynctex'
-                value = convert_bool(value)
-                raise 'magic option `enableSynctex` must be boolean' if value.nil?
-                config['synctex'] = value ? (config['synctex'] || 1) : nil
-            when 'enableshellescape'
-                value = convert_bool(value)
-                raise 'magic option `enableShellEscape` must be boolean' if value.nil?
-                config['shell-escape'] = value
-            else
-                warn "magic comment `#{m[1]}` is ignored"
-            end
-        end
+  root_file = nil
+  File.open(config['input'], external_encoding: 'utf-8') do |io|
+    io.each do |line|
+      next if line.strip.empty?
+      break unless line[0] == '%'
+      m = line.match(/^%\s*!TEX (\S+)\s*=\s*(.*?)\s*$/)
+      next unless m
+      key = m[1].tr('_-', '').downcase
+      value = m[2]
+      case key
+      when 'root'
+        root_file = value
+      when 'engine', 'synctex', 'jobname', 'makeindex', 'bibtex'
+        config[key] = value
+      when 'program'
+        config['engine'] = value
+      when 'format', 'outputformat'
+        config['output-format'] = value
+      when 'outputdirectory'
+        config['output-directory'] = value
+      when 'enablesynctex'
+        value = convert_bool(value)
+        raise 'magic option `enableSynctex` must be boolean' if value.nil?
+        config['synctex'] = value ? (config['synctex'] || 1) : nil
+      when 'enableshellescape'
+        value = convert_bool(value)
+        raise 'magic option `enableShellEscape` must be boolean' if value.nil?
+        config['shell-escape'] = value
+      else
+        warn "magic comment `#{m[1]}` is ignored"
+      end
     end
-    break if root_file.nil? || config['input'] == root_file
-    config['input'] = root_file
+  end
+  break if root_file.nil? || config['input'] == root_file
+  config['input'] = root_file
 end
 
 # merge config
@@ -133,10 +133,10 @@ config['cluttex-path'] ||= 'cluttex'
 raise "command `#{config['cluttex-path']}` not found" unless $?.success?
 
 if config['verbose']
-    warn 'ClutTeX options:'
-    config.each do |k, v|
-        warn "  #{k}: #{v.inspect}"
-    end
+  warn 'ClutTeX options:'
+  config.each do |k, v|
+    warn "  #{k}: #{v.inspect}"
+  end
 end
 
 # generate command
@@ -144,21 +144,21 @@ end
 cmd_args = []
 
 config.each do |k, v|
-    next if v.nil?
-    case k
-    when 'cluttex-path', 'input'
-        nil
-    when 'tex-option', 'dvipdfmx-option'
-        v.each{|e| cmd_args << "--#{k}=#{e}"} unless v.empty?
-    when 'includeonly', 'package-support'
-        cmd_args << (v.is_a?(Array) ? "--#{k}=#{v.join(',')}" : "--#{k}=#{v}") unless v.empty?
-    when 'fresh', 'watch', 'verbose', 'shell-restricted'
-        cmd_args << "--#{k}" if v
-    when 'change-directory', 'shell-escape', 'file-line-error', 'halt-on-error'
-        cmd_args << (v ? "--#{k}" : "--no-#{k}")
-    else
-        cmd_args << "--#{k}=#{v}"
-    end
+  next if v.nil?
+  case k
+  when 'cluttex-path', 'input'
+    nil
+  when 'tex-option', 'dvipdfmx-option'
+    v.each{|e| cmd_args << "--#{k}=#{e}"} unless v.empty?
+  when 'includeonly', 'package-support'
+    cmd_args << (v.is_a?(Array) ? "--#{k}=#{v.join(',')}" : "--#{k}=#{v}") unless v.empty?
+  when 'fresh', 'watch', 'verbose', 'shell-restricted'
+    cmd_args << "--#{k}" if v
+  when 'change-directory', 'shell-escape', 'file-line-error', 'halt-on-error'
+    cmd_args << (v ? "--#{k}" : "--no-#{k}")
+  else
+    cmd_args << "--#{k}=#{v}"
+  end
 end
 
 cmd_args << '--'
